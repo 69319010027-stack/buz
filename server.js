@@ -11,145 +11,124 @@ app.get("/", (req, res) => {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Web Server สำหรับส่งงาน</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
-
 <style>
 *{
     margin:0;
     padding:0;
     box-sizing:border-box;
-    font-family:'Kanit',sans-serif;
 }
 
 body{
+    font-family:Arial, Helvetica, sans-serif;
+    background:linear-gradient(135deg,#0f172a,#1e3a8a,#2563eb);
     display:flex;
     justify-content:center;
     align-items:center;
     min-height:100vh;
-    background:linear-gradient(135deg,#4facfe,#00f2fe,#43e97b);
-    background-size:300% 300%;
-    animation:bgMove 8s ease infinite;
 }
 
-@keyframes bgMove{
-    0%{background-position:0% 50%;}
-    50%{background-position:100% 50%;}
-    100%{background-position:0% 50%;}
-}
-
-.card{
+.container{
     width:90%;
-    max-width:700px;
-    background:rgba(255,255,255,.18);
-    backdrop-filter:blur(12px);
-    border:1px solid rgba(255,255,255,.3);
-    border-radius:25px;
-    padding:40px;
-    text-align:center;
+    max-width:650px;
+    background:#ffffff;
+    border-radius:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,.25);
+    overflow:hidden;
+}
+
+.header{
+    background:#2563eb;
     color:white;
-    box-shadow:0 15px 40px rgba(0,0,0,.25);
-    animation:fadeIn 1s ease;
+    text-align:center;
+    padding:30px;
 }
 
-@keyframes fadeIn{
-    from{
-        opacity:0;
-        transform:translateY(30px);
-    }
-    to{
-        opacity:1;
-        transform:translateY(0);
-    }
+.header h1{
+    font-size:30px;
+    margin-bottom:10px;
 }
 
-.logo{
-    width:100px;
-    height:100px;
-    margin:auto;
-    border-radius:50%;
-    background:white;
-    color:#2196f3;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    font-size:45px;
-    font-weight:bold;
-    margin-bottom:20px;
-    box-shadow:0 8px 20px rgba(0,0,0,.25);
+.header p{
+    font-size:16px;
 }
 
-h1{
-    font-size:2rem;
-    margin-bottom:15px;
+.content{
+    padding:35px;
 }
 
 .info{
-    margin:20px 0;
-    padding:20px;
-    border-radius:15px;
-    background:rgba(255,255,255,.12);
+    display:flex;
+    justify-content:space-between;
+    margin:18px 0;
+    padding:15px;
+    border-left:5px solid #2563eb;
+    background:#f8fafc;
+    border-radius:8px;
 }
 
-.info p{
-    font-size:1.2rem;
-    margin:10px 0;
-}
-
-span{
-    color:#ffe082;
+.info span:first-child{
     font-weight:bold;
+    color:#1e3a8a;
 }
 
 .status{
-    margin-top:25px;
-    display:inline-block;
-    padding:12px 25px;
-    border-radius:50px;
-    background:#4CAF50;
-    color:white;
-    font-size:1rem;
-    box-shadow:0 5px 15px rgba(0,0,0,.2);
+    margin-top:30px;
+    text-align:center;
+    padding:15px;
+    background:#dcfce7;
+    color:#166534;
+    border-radius:10px;
+    font-weight:bold;
 }
 
 .footer{
-    margin-top:30px;
-    opacity:.8;
-    font-size:.95rem;
+    text-align:center;
+    padding:18px;
+    background:#f1f5f9;
+    color:#555;
+    font-size:14px;
 }
-
 </style>
 
 </head>
 <body>
 
-<div class="card">
+<div class="container">
 
-<div class="logo">🌐</div>
+<div class="header">
+<h1>🌐 Web Server</h1>
+<p>ใบงานปฏิบัติการ : การสร้างและจำลอง Web Server</p>
+</div>
 
-<h1>ใบงานปฏิบัติการ</h1>
-<h2>การสร้างและจำลอง Web Server</h2>
+<div class="content">
 
 <div class="info">
-<p>🎓 <span>รหัสนักศึกษา</span><br>69319010027</p>
+<span>รหัสนักศึกษา</span>
+<span>69319010027</span>
+</div>
 
-<p>👨‍🎓 <span>ชื่อ-นามสกุล</span><br>นายปรัตถกร คำศรี</p>
+<div class="info">
+<span>ชื่อ-นามสกุล</span>
+<span>นายปรัตถกร คำศรี</span>
 </div>
 
 <div class="status">
 ✅ Web Server กำลังทำงานบน Cloud สำเร็จ
 </div>
 
+</div>
+
 <div class="footer">
-Express.js | Node.js | Cloud Deployment
+Node.js • Express.js • Cloud Server
 </div>
 
 </div>
 
 </body>
 </html>
-`);
+  `);
 });
 
 app.listen(PORT, () => {
-  console.log(\`🚀 Server is running on port \${PORT}\`);
+  console.log(\`Server is running on port \${PORT}\`);
 });
