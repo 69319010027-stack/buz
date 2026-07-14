@@ -2,66 +2,67 @@ const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// หน้าแรก
 app.get("/", (req, res) => {
   res.send(`
-<!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Web Server</title>
+    <!DOCTYPE html>
+    <html lang="th">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Web Server สำหรับส่งงาน</title>
 
-<style>
-body{
-    font-family: Arial, sans-serif;
-    background:#f4f6f9;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
-    margin:0;
-}
+      <style>
+        body{
+          font-family: Arial, sans-serif;
+          background-color: #f4f4f9;
+          text-align: center;
+          margin: 0;
+          padding-top: 80px;
+        }
 
-.card{
-    background:#fff;
-    width:400px;
-    padding:30px;
-    border-radius:10px;
-    text-align:center;
-    box-shadow:0 5px 15px rgba(0,0,0,0.2);
-}
+        .container{
+          width: 400px;
+          margin: auto;
+          background: white;
+          padding: 30px;
+          border-radius: 10px;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
 
-h1{
-    color:#007bff;
-}
+        h1{
+          color: #333;
+        }
 
-p{
-    font-size:18px;
-    margin:15px 0;
-}
+        h2{
+          color: #007bff;
+        }
 
-.status{
-    color:green;
-    font-weight:bold;
-}
-</style>
+        p{
+          color: green;
+          font-weight: bold;
+        }
+      </style>
 
-</head>
-<body>
+    </head>
 
-<div class="card">
-    <h1>🌐 Web Server</h1>
-    <p><strong>ใบงาน:</strong> การสร้างและจำลอง Web Server</p>
-    <p><strong>รหัสนักศึกษา:</strong> 69319010027</p>
-    <p><strong>ชื่อ:</strong> นายปรัตถกร คำศรี</p>
-    <p class="status">✅ Web Server กำลังทำงานอยู่</p>
-</div>
+    <body>
 
-</body>
-</html>
+      <div class="container">
+        <h1>ใบงานปฏิบัติการ</h1>
+        <h2>การสร้างและจำลอง Web Server</h2>
+
+        <h2>รหัสนักศึกษา: 69319010027</h2>
+        <h2>ชื่อ-นามสกุล: นายปรัตถกร คำศรี</h2>
+
+        <p>✅ Status: Web Server กำลังทำงานอยู่บน Cloud</p>
+      </div>
+
+    </body>
+    </html>
   `);
 });
 
 app.listen(PORT, () => {
-  console.log(\`Server is running on port \${PORT}\`);
+  console.log(`Server is running on port ${PORT}`);
 });
