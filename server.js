@@ -1,15 +1,13 @@
-const express = require("express");
-const { Pool } = require("pg");
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// ตั้งค่าการเชื่อมต่อฐานข้อมูล โดยดึง URL มาจาก Environment Variable ของ Railway
+const http = require('http');
+// 1. เรียกใช้งาน Pool จากไลบรารี pg สำหรับจัดการการเชื่อมต่อฐานข้อมูล
+const { Pool } = require('pg');
+// 2. ตั้งค่าการเชื่อมต่อ โดยดึง URL มาจาก Environment Variable ของ Railway
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
+const port = process.env.PORT || 3000;
 
-// สไตล์กลางที่ใช้ร่วมกันทุกหน้า (ธีมม่วง-ดำ ตามหน้าแรก)
+// สไตล์กลางที่ใช้ร่วมกันทุกหน้า (ธีมม่วง-ดำ)
 const baseStyles = `
   * { box-sizing: border-box; }
 
@@ -150,11 +148,6 @@ const baseStyles = `
     border: 1px solid rgba(196, 181, 253, 0.4);
     padding: 8px 16px;
     border-radius: 8px;
-    transition: background 0.2s;
-  }
-
-  a.nav-link:hover {
-    background: rgba(196, 181, 253, 0.15);
   }
 
   table.students {
@@ -180,8 +173,8 @@ const baseStyles = `
 `;
 
 // ---------- หน้าแรก ----------
-app.get("/", (req, res) => {
-  res.send(`
+function renderHome() {
+  return `
     <!DOCTYPE html>
     <html lang="th">
     <head>
@@ -234,78 +227,99 @@ app.get("/", (req, res) => {
       </div>
     </body>
     </html>
-  `);
-});
+  `;
+}
 
 // ---------- หน้าดึงข้อมูลนักศึกษาจาก Postgres ----------
-app.get("/students", async (req, res) => {
-  let client;
-  try {
-    client = await pool.connect();
-    const result = await client.query("SELECT * FROM students");
+function renderStudents(rowsHtml) {
+  return `
+    <!DOCTYPE html>
+    <html lang="th">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>ฐานข้อมูลนักศึกษา</title>
+      <style>${baseStyles}</style>
+    </head>
+    <body>
+      <div class="stars"></div>
+      <div class="container wide">
+        <h1>ฐานข้อมูลนักศึกษา</h1>
+        <h2 class="subtitle">ทดสอบการเชื่อมต่อฐานข้อมูล</h2>
 
-    const rows = result.rows
-      .map(
-        (row) => `
-          <tr>
-            <td>${row.student_id}</td>
-            <td>${row.student_name}</td>
-          </tr>`
-      )
-      .join("");
+        <table class="students">
+          <tr><th>รหัสนักศึกษา</th><th>ชื่อ-นามสกุล</th></tr>
+          ${rowsHtml || `<tr><td colspan="2">ไม่พบข้อมูล</td></tr>`}
+        </table>
 
-    res.send(`
-      <!DOCTYPE html>
-      <html lang="th">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>ฐานข้อมูลนักศึกษา</title>
-        <style>${baseStyles}</style>
-      </head>
-      <body>
-        <div class="stars"></div>
-        <div class="container wide">
-          <h1>ฐานข้อมูลนักศึกษา</h1>
-          <h2 class="subtitle">ทดสอบการเชื่อมต่อฐานข้อมูล</h2>
+        <div class="status">Status: เชื่อมต่อฐานข้อมูลสำเร็จ</div>
+        <a class="nav-link" href="/">← กลับหน้าแรก</a>
+      </div>
+    </body>
+    </html>
+  `;
+}
 
-          <table class="students">
-            <tr><th>รหัสนักศึกษา</th><th>ชื่อ-นามสกุล</th></tr>
-            ${rows || `<tr><td colspan="2">ไม่พบข้อมูล</td></tr>`}
-          </table>
+function renderError(message) {
+  return `
+    <!DOCTYPE html>
+    <html lang="th">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>เกิดข้อผิดพลาด</title>
+      <style>${baseStyles}</style>
+    </head>
+    <body>
+      <div class="stars"></div>
+      <div class="container">
+        <h1>เกิดข้อผิดพลาด!</h1>
+        <div class="status error">${message}</div>
+        <a class="nav-link" href="/">← กลับหน้าแรก</a>
+      </div>
+    </body>
+    </html>
+  `;
+}
 
-          <div class="status">Status: เชื่อมต่อฐานข้อมูลสำเร็จ</div>
-          <a class="nav-link" href="/">← กลับหน้าแรก</a>
-        </div>
-      </body>
-      </html>
-    `);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send(`
-      <!DOCTYPE html>
-      <html lang="th">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>เกิดข้อผิดพลาด</title>
-        <style>${baseStyles}</style>
-      </head>
-      <body>
-        <div class="stars"></div>
-        <div class="container">
-          <h1>เกิดข้อผิดพลาด!</h1>
-          <div class="status error">${err.message}</div>
-          <a class="nav-link" href="/">← กลับหน้าแรก</a>
-        </div>
-      </body>
-      </html>
-    `);
-  } finally {
-    if (client) client.release();
+const server = http.createServer(async (req, res) => {
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+
+  // ---------- หน้าแรก ----------
+  if (req.url === '/') {
+    res.end(renderHome());
+    return;
   }
+
+  // ---------- หน้าดึงข้อมูลจากฐานข้อมูล ----------
+  if (req.url === '/students') {
+    try {
+      // 3. ขอเชื่อมต่อและส่งคำสั่ง SQL ไปดึงข้อมูลจากตาราง students
+      const client = await pool.connect();
+      const result = await client.query('SELECT * FROM students');
+      client.release(); // คืนการเชื่อมต่อเมื่อใช้งานเสร็จ
+
+      // 4. นำข้อมูลที่ได้ (result.rows) มาประกอบเป็นตาราง HTML
+      const rowsHtml = result.rows
+        .map(row => `<tr><td>${row.student_id}</td><td>${row.student_name}</td></tr>`)
+        .join('');
+
+      res.end(renderStudents(rowsHtml));
+    } catch (err) {
+      // กรณีเชื่อมต่อไม่ได้หรือเขียนชื่อตารางผิด
+      console.error(err);
+      res.statusCode = 500;
+      res.end(renderError(err.message));
+    }
+    return;
+  }
+
+  // ---------- เส้นทางอื่น ๆ ที่ไม่รู้จัก ----------
+  res.statusCode = 404;
+  res.end(renderError('ไม่พบหน้าที่ต้องการ (404)'));
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+server.listen(port, () => {
+  console.log(`Server is running on port: ${port}`);
 });
