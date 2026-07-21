@@ -1,8 +1,185 @@
 const express = require("express");
+const { Pool } = require("pg");
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// หน้าแรก
+// ตั้งค่าการเชื่อมต่อฐานข้อมูล โดยดึง URL มาจาก Environment Variable ของ Railway
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
+// สไตล์กลางที่ใช้ร่วมกันทุกหน้า (ธีมม่วง-ดำ ตามหน้าแรก)
+const baseStyles = `
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', 'Tahoma', 'Sarabun', Arial, sans-serif;
+    background: linear-gradient(160deg, #0d0b2b 0%, #241b52 40%, #4a2d7a 75%, #7c3aed 100%);
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stars {
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(2px 2px at 20px 30px, #fff, transparent),
+      radial-gradient(2px 2px at 60px 80px, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 100px 20px, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 150px 60px, #fff, transparent),
+      radial-gradient(2px 2px at 200px 100px, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 250px 40px, #fff, transparent),
+      radial-gradient(2px 2px at 300px 90px, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 350px 15px, #fff, transparent);
+    background-size: 400px 200px;
+    animation: twinkle 4s ease-in-out infinite alternate;
+    opacity: 0.6;
+  }
+
+  @keyframes twinkle {
+    from { opacity: 0.3; }
+    to { opacity: 0.7; }
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 440px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 30px 30px 35px;
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(124, 58, 237, 0.4);
+    text-align: center;
+    animation: fadeIn 0.6s ease-out;
+  }
+
+  .container.wide {
+    max-width: 700px;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .avatar {
+    width: 140px;
+    height: 140px;
+    margin: -10px auto 5px;
+    filter: drop-shadow(0 6px 14px rgba(0,0,0,0.4));
+  }
+
+  h1 {
+    color: #ffffff;
+    font-size: 22px;
+    margin: 10px 0 5px;
+    text-shadow: 0 0 10px rgba(167, 139, 250, 0.6);
+  }
+
+  h2.subtitle {
+    color: #c4b5fd;
+    font-size: 17px;
+    font-weight: 600;
+    margin: 0 0 20px;
+  }
+
+  .info-box {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(196, 181, 253, 0.3);
+    border-radius: 12px;
+    padding: 15px 20px;
+    margin: 15px 0;
+    text-align: left;
+  }
+
+  .info-box p {
+    margin: 6px 0;
+    color: #ede9fe;
+    font-weight: normal;
+    font-size: 15px;
+  }
+
+  .info-box .label {
+    font-weight: bold;
+    color: #a78bfa;
+  }
+
+  .status {
+    margin-top: 20px;
+    padding: 12px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+    border-radius: 10px;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.5);
+  }
+
+  .status::before {
+    content: "✅ ";
+  }
+
+  .status.error {
+    background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.5);
+    text-align: left;
+  }
+
+  .status.error::before {
+    content: "⚠️ ";
+  }
+
+  a.nav-link {
+    display: inline-block;
+    margin-top: 18px;
+    color: #c4b5fd;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 14px;
+    border: 1px solid rgba(196, 181, 253, 0.4);
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+
+  a.nav-link:hover {
+    background: rgba(196, 181, 253, 0.15);
+  }
+
+  table.students {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    text-align: left;
+  }
+
+  table.students th, table.students td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(196, 181, 253, 0.25);
+    color: #ede9fe;
+    font-size: 14px;
+  }
+
+  table.students th {
+    color: #a78bfa;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+  }
+`;
+
+// ---------- หน้าแรก ----------
 app.get("/", (req, res) => {
   res.send(`
     <!DOCTYPE html>
@@ -11,124 +188,7 @@ app.get("/", (req, res) => {
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Web Server สำหรับส่งงาน</title>
-      <style>
-        * {
-          box-sizing: border-box;
-        }
-
-        body {
-          font-family: 'Segoe UI', 'Tahoma', 'Sarabun', Arial, sans-serif;
-          background: linear-gradient(160deg, #0d0b2b 0%, #241b52 40%, #4a2d7a 75%, #7c3aed 100%);
-          min-height: 100vh;
-          margin: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 20px;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .stars {
-          position: absolute;
-          inset: 0;
-          background-image:
-            radial-gradient(2px 2px at 20px 30px, #fff, transparent),
-            radial-gradient(2px 2px at 60px 80px, #fff, transparent),
-            radial-gradient(1.5px 1.5px at 100px 20px, #fff, transparent),
-            radial-gradient(1.5px 1.5px at 150px 60px, #fff, transparent),
-            radial-gradient(2px 2px at 200px 100px, #fff, transparent),
-            radial-gradient(1.5px 1.5px at 250px 40px, #fff, transparent),
-            radial-gradient(2px 2px at 300px 90px, #fff, transparent),
-            radial-gradient(1.5px 1.5px at 350px 15px, #fff, transparent);
-          background-size: 400px 200px;
-          animation: twinkle 4s ease-in-out infinite alternate;
-          opacity: 0.6;
-        }
-
-        @keyframes twinkle {
-          from { opacity: 0.3; }
-          to { opacity: 0.7; }
-        }
-
-        .container {
-          position: relative;
-          z-index: 1;
-          width: 100%;
-          max-width: 440px;
-          background: rgba(255, 255, 255, 0.08);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          padding: 30px 30px 35px;
-          border-radius: 20px;
-          box-shadow: 0 20px 50px rgba(124, 58, 237, 0.4);
-          text-align: center;
-          animation: fadeIn 0.6s ease-out;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(-20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        .avatar {
-          width: 140px;
-          height: 140px;
-          margin: -10px auto 5px;
-          filter: drop-shadow(0 6px 14px rgba(0,0,0,0.4));
-        }
-
-        h1 {
-          color: #ffffff;
-          font-size: 22px;
-          margin: 10px 0 5px;
-          text-shadow: 0 0 10px rgba(167, 139, 250, 0.6);
-        }
-
-        h2.subtitle {
-          color: #c4b5fd;
-          font-size: 17px;
-          font-weight: 600;
-          margin: 0 0 20px;
-        }
-
-        .info-box {
-          background: rgba(255, 255, 255, 0.06);
-          border: 1px solid rgba(196, 181, 253, 0.3);
-          border-radius: 12px;
-          padding: 15px 20px;
-          margin: 15px 0;
-          text-align: left;
-        }
-
-        .info-box p {
-          margin: 6px 0;
-          color: #ede9fe;
-          font-weight: normal;
-          font-size: 15px;
-        }
-
-        .info-box .label {
-          font-weight: bold;
-          color: #a78bfa;
-        }
-
-        .status {
-          margin-top: 20px;
-          padding: 12px;
-          background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
-          border-radius: 10px;
-          color: white;
-          font-weight: bold;
-          font-size: 14px;
-          box-shadow: 0 4px 15px rgba(139, 92, 246, 0.5);
-        }
-
-        .status::before {
-          content: "✅ ";
-        }
-      </style>
+      <style>${baseStyles}</style>
     </head>
     <body>
       <div class="stars"></div>
@@ -169,10 +229,81 @@ app.get("/", (req, res) => {
         </div>
 
         <div class="status">Status: Web Server กำลังทำงานอยู่บน Cloud</div>
+
+        <a class="nav-link" href="/students">ดูข้อมูลนักศึกษาจากฐานข้อมูล →</a>
       </div>
     </body>
     </html>
   `);
+});
+
+// ---------- หน้าดึงข้อมูลนักศึกษาจาก Postgres ----------
+app.get("/students", async (req, res) => {
+  let client;
+  try {
+    client = await pool.connect();
+    const result = await client.query("SELECT * FROM students");
+
+    const rows = result.rows
+      .map(
+        (row) => `
+          <tr>
+            <td>${row.student_id}</td>
+            <td>${row.student_name}</td>
+          </tr>`
+      )
+      .join("");
+
+    res.send(`
+      <!DOCTYPE html>
+      <html lang="th">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>ฐานข้อมูลนักศึกษา</title>
+        <style>${baseStyles}</style>
+      </head>
+      <body>
+        <div class="stars"></div>
+        <div class="container wide">
+          <h1>ฐานข้อมูลนักศึกษา</h1>
+          <h2 class="subtitle">ทดสอบการเชื่อมต่อฐานข้อมูล</h2>
+
+          <table class="students">
+            <tr><th>รหัสนักศึกษา</th><th>ชื่อ-นามสกุล</th></tr>
+            ${rows || `<tr><td colspan="2">ไม่พบข้อมูล</td></tr>`}
+          </table>
+
+          <div class="status">Status: เชื่อมต่อฐานข้อมูลสำเร็จ</div>
+          <a class="nav-link" href="/">← กลับหน้าแรก</a>
+        </div>
+      </body>
+      </html>
+    `);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(`
+      <!DOCTYPE html>
+      <html lang="th">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>เกิดข้อผิดพลาด</title>
+        <style>${baseStyles}</style>
+      </head>
+      <body>
+        <div class="stars"></div>
+        <div class="container">
+          <h1>เกิดข้อผิดพลาด!</h1>
+          <div class="status error">${err.message}</div>
+          <a class="nav-link" href="/">← กลับหน้าแรก</a>
+        </div>
+      </body>
+      </html>
+    `);
+  } finally {
+    if (client) client.release();
+  }
 });
 
 app.listen(PORT, () => {
