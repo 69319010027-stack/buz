@@ -248,7 +248,7 @@ function renderStudents(rowsHtml) {
         <h2 class="subtitle">ทดสอบการเชื่อมต่อฐานข้อมูล</h2>
 
         <table class="students">
-          <tr><th>รหัสนักศึกษา</th><th>ชื่อ-นามสกุล</th></tr>
+          <tr><th>69319010027</th><th>ปรัตถกร คำศรี</th></tr>
           ${rowsHtml || `<tr><td colspan="2">ไม่พบข้อมูล</td></tr>`}
         </table>
 
